@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { createApolloGraphqlServer } from "./graphql";
 import { expressMiddleware } from "@as-integrations/express5";
+import UserService from "./services/user";
 
 
 
@@ -16,7 +17,18 @@ async function startGraphQLServer() {
     "/graphql",
     cors(),
     express.json(),
-    expressMiddleware(gqlServer)
+    expressMiddleware(gqlServer, {
+      context: async ({ req, res }) => {
+        const token = req.headers["token"]
+        console.log(token)
+        try {
+          const user = await UserService.decodeJWTToken(token as string)
+          return { user }
+        } catch (error) {
+          console.error("Error occurred:", error)
+        }
+      }
+    })
   );
 
   app.listen(PORT, () => {

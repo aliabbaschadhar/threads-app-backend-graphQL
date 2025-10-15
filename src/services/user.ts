@@ -15,6 +15,8 @@ export interface GetUserTokenPayload {
   password: string
 }
 
+const SECRET = process.env.JWT_SECRET || "BapaStunning"
+
 export default class UserService {
   public static async createUser(payload: CreateUserPayload): Promise<User> {
     const { firstName, lastName, email, password } = payload
@@ -60,22 +62,29 @@ export default class UserService {
       throw new Error("Invalid credentials")
     }
 
-    const secret = process.env.JWT_SECRET || "BapaStunning"
-    if (!secret) {
+    if (!SECRET) {
       throw new Error("JWT_SECRET environment variable is not set")
     }
 
     const token = jwt.sign(
       {
-        sub: user.id,
+        id: user.id,
         email: user.email
       },
-      secret,
+      SECRET,
       {
         expiresIn: "1h"
       }
     )
 
     return token
+  }
+
+  public static async decodeJWTToken(token: string) {
+    return jwt.verify(token, SECRET)
+  }
+
+  public static async getUserById(id: string) {
+    return await prismaClient.user.findUnique({ where: { id } })
   }
 }

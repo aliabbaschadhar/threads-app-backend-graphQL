@@ -7,7 +7,8 @@ export async function createApolloGraphqlServer() {
     // Schema
     typeDefs: `#graphql 
       type Query{
-        ${User.queries}
+        # ${User.queries}
+        
       }
 
       type Mutation {
